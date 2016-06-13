@@ -1,0 +1,13 @@
+[package]
+authors = ["Nick Fitzgerald <fitzgen@gmail.com>"]
+name = "leb128"
+version = "0.1.0"
+
+[dependencies]
+
+[dependencies.clippy]
+optional = true
+version = "0.0.76"
+
+[features]
+nightly = ["clippy"]
