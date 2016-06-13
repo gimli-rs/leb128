@@ -4,7 +4,7 @@
 
 [![Build Status](https://travis-ci.org/fitzgen/leb128.png?branch=master)](https://travis-ci.org/fitzgen/leb128)
 
-[![Coverage Status](https://coveralls.io/repos/fitzgen/leb128/badge.svg?branch=master&service=github)](https://coveralls.io/github/fitzgen/leb128?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/fitzgen/leb128/badge.svg?branch=master)](https://coveralls.io/github/fitzgen/leb128?branch=master)
 
 Read and write DWARF's "Little Endian Base 128" (LEB128) variable length integer
 encoding.
