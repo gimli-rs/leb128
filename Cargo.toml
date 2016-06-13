@@ -7,7 +7,7 @@ description = "Read and write DWARF's \"Little Endian Base 128\" (LEB128) variab
 
 license = "Apache-2.0/MIT"
 readme = "./README.md"
-keywords = ["LEB128", "vlq", "variable", "length", "encoding"]
+keywords = ["LEB128", "DWARF", "variable", "length", "encoding"]
 documentation = "http://fitzgen.github.io/leb128/leb128/index.html"
 repository = "https://github.com/fitzgen/leb128"
 
