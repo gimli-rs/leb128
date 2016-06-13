@@ -3,8 +3,7 @@ authors = ["Nick Fitzgerald <fitzgen@gmail.com>"]
 name = "leb128"
 version = "0.1.0"
 
-description = "Read and write DWARF's \"Little Endian Base 128\" (LEB128)
-variable length integer encoding."
+description = "Read and write DWARF's \"Little Endian Base 128\" (LEB128) variable length integer encoding."
 
 license = "Apache-2.0/MIT"
 readme = "./README.md"
