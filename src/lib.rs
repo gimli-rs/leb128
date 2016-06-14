@@ -454,4 +454,14 @@ mod tests {
         let mut readable = &buf[..];
         assert!(read::signed(&mut readable).is_err());
     }
+
+    #[test]
+    fn test_read_multiple() {
+        let buf = [2u8 | CONTINUATION_BIT, 1u8,
+                   1u8];
+
+        let mut readable = &buf[..];
+        assert_eq!(read::unsigned(&mut readable).expect("Should read first number"), 130u64);
+        assert_eq!(read::unsigned(&mut readable).expect("Should read first number"), 1u64);
+    }
 }
