@@ -22,20 +22,20 @@ or add this to your `Cargo.toml`:
 ## Example
 
 ```rust
-//! use leb128;
-//!
-//! let mut buf = [0; 1024];
-//!
-//! // Write to anything that implements `std::io::Write`.
-//! {
-//!     let mut writable = &mut buf[..];
-//!     leb128::write::signed(&mut writable, -12345).expect("Should write number");
-//! }
-//!
-//! // Read from anything that implements `std::io::Read`.
-//! let mut readable = &buf[..];
-//! let val = leb128::read::signed(&mut readable).expect("Should read number");
-//! assert_eq!(val, -12345);
+use leb128;
+
+let mut buf = [0; 1024];
+
+// Write to anything that implements `std::io::Write`.
+{
+    let mut writable = &mut buf[..];
+    leb128::write::signed(&mut writable, -12345).expect("Should write number");
+}
+
+// Read from anything that implements `std::io::Read`.
+let mut readable = &buf[..];
+let val = leb128::read::signed(&mut readable).expect("Should read number");
+assert_eq!(val, -12345);
 ```
 
 ## Documentation
