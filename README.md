@@ -1,10 +1,6 @@
 # `leb128`
 
-[![](http://meritbadge.herokuapp.com/leb128)![](https://img.shields.io/crates/d/leb128.png)](https://crates.io/crates/leb128)
-
-[![Build Status](https://travis-ci.org/fitzgen/leb128.png?branch=master)](https://travis-ci.org/fitzgen/leb128)
-
-[![Coverage Status](https://coveralls.io/repos/github/fitzgen/leb128/badge.svg?branch=master)](https://coveralls.io/github/fitzgen/leb128?branch=master)
+[![](http://meritbadge.herokuapp.com/leb128) ![](https://img.shields.io/crates/d/leb128.png)](https://crates.io/crates/leb128) [![Build Status](https://travis-ci.org/fitzgen/leb128.png?branch=master)](https://travis-ci.org/fitzgen/leb128) [![Coverage Status](https://coveralls.io/repos/github/fitzgen/leb128/badge.svg?branch=master)](https://coveralls.io/github/fitzgen/leb128?branch=master)
 
 Read and write DWARF's "Little Endian Base 128" (LEB128) variable length integer
 encoding.
@@ -22,6 +18,25 @@ or add this to your `Cargo.toml`:
 
     [dependencies]
     leb128 = "0.1.0"
+
+## Example
+
+```rust
+//! use leb128;
+//!
+//! let mut buf = [0; 1024];
+//!
+//! // Write to anything that implements `std::io::Write`.
+//! {
+//!     let mut writable = &mut buf[..];
+//!     leb128::write::signed(&mut writable, -12345).expect("Should write number");
+//! }
+//!
+//! // Read from anything that implements `std::io::Read`.
+//! let mut readable = &buf[..];
+//! let val = leb128::read::signed(&mut readable).expect("Should read number");
+//! assert_eq!(val, -12345);
+```
 
 ## Documentation
 
