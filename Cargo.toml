@@ -13,9 +13,12 @@ repository = "https://github.com/fitzgen/leb128"
 
 [dependencies]
 
-[dependencies.clippy]
-optional = true
-version = "0.0.76"
+# Unfortunately, clippy keeps breaking on recent nightlies. Disabling until it
+# stabilizes a bit more.
+
+# [dependencies.clippy]
+# optional = true
+# version = "0.0.76"
 
 [features]
-nightly = ["clippy"]
+nightly = []
