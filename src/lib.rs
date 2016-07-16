@@ -170,7 +170,7 @@ pub mod read {
 
         if shift < size && (SIGN_BIT & byte) == SIGN_BIT {
             // Sign extend the result.
-            result |= -(1 << shift);
+            result |= !0 << shift;
         }
 
         Ok(result)
@@ -332,6 +332,22 @@ mod tests {
         let buf = [0x7fu8 | CONTINUATION_BIT, 0x7e];
         let mut readable = &buf[..];
         assert_eq!(-129,
+                   read::signed(&mut readable).expect("Should read number"));
+    }
+
+    #[test]
+    fn test_read_signed_63_bits() {
+        let buf = [CONTINUATION_BIT,
+                   CONTINUATION_BIT,
+                   CONTINUATION_BIT,
+                   CONTINUATION_BIT,
+                   CONTINUATION_BIT,
+                   CONTINUATION_BIT,
+                   CONTINUATION_BIT,
+                   CONTINUATION_BIT,
+                   0x40];
+        let mut readable = &buf[..];
+        assert_eq!(-0x4000000000000000,
                    read::signed(&mut readable).expect("Should read number"));
     }
 
