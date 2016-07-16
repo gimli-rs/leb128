@@ -71,8 +71,6 @@ pub mod read {
     pub enum Error {
         /// There was an underlying IO error.
         IoError(io::Error),
-        /// We were not done reading the number, but there is no more data.
-        UnexpectedEndOfData,
         /// The number being read is larger than can be represented.
         Overflow,
     }
@@ -95,7 +93,6 @@ pub mod read {
         fn description(&self) -> &str {
             match *self {
                 Error::IoError(ref e) => e.description(),
-                Error::UnexpectedEndOfData => "Unexpected end of data while reading",
                 Error::Overflow => "The number being read is larger than can be represented",
             }
         }
@@ -103,7 +100,6 @@ pub mod read {
         fn cause(&self) -> Option<&::std::error::Error> {
             match *self {
                 Error::IoError(ref e) => Some(e),
-                Error::UnexpectedEndOfData |
                 Error::Overflow => None,
             }
         }
@@ -119,9 +115,7 @@ pub mod read {
 
         loop {
             let mut buf = [0];
-            if try!(r.read(&mut buf)) != 1 {
-                return Err(Error::UnexpectedEndOfData);
-            }
+            try!(r.read_exact(&mut buf));
 
             let low_bits = low_bits_of_byte(buf[0]) as u64;
             if low_bits.leading_zeros() < shift {
@@ -150,9 +144,7 @@ pub mod read {
 
         loop {
             let mut buf = [0];
-            if try!(r.read(&mut buf)) != 1 {
-                return Err(Error::UnexpectedEndOfData);
-            }
+            try!(r.read_exact(&mut buf));
 
             byte = buf[0];
             let low_bits = low_bits_of_byte(byte) as i64;
@@ -355,26 +347,20 @@ mod tests {
     fn test_read_unsigned_not_enough_data() {
         let buf = [CONTINUATION_BIT];
         let mut readable = &buf[..];
-        assert!(match read::unsigned(&mut readable) {
-            Err(read::Error::UnexpectedEndOfData) => true,
-            otherwise => {
-                println!("Unexpected: {:?}", otherwise);
-                false
-            }
-        });
+        match read::unsigned(&mut readable) {
+            Err(read::Error::IoError(e)) => assert_eq!(e.kind(), io::ErrorKind::UnexpectedEof),
+            otherwise => panic!("Unexpected: {:?}", otherwise),
+        }
     }
 
     #[test]
     fn test_read_signed_not_enough_data() {
         let buf = [CONTINUATION_BIT];
         let mut readable = &buf[..];
-        assert!(match read::signed(&mut readable) {
-            Err(read::Error::UnexpectedEndOfData) => true,
-            otherwise => {
-                println!("Unexpected: {:?}", otherwise);
-                false
-            }
-        });
+        match read::signed(&mut readable) {
+            Err(read::Error::IoError(e)) => assert_eq!(e.kind(), io::ErrorKind::UnexpectedEof),
+            otherwise => panic!("Unexpected: {:?}", otherwise),
+        }
     }
 
     #[test]
