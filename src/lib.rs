@@ -147,11 +147,11 @@ pub mod read {
             try!(r.read_exact(&mut buf));
 
             byte = buf[0];
-            let low_bits = low_bits_of_byte(byte) as i64;
-            if low_bits.leading_zeros() < shift {
+            if shift == 63 && byte != 0x00 && byte != 0x7f {
                 return Err(Error::Overflow);
             }
 
+            let low_bits = low_bits_of_byte(byte) as i64;
             result |= low_bits << shift;
             shift += 7;
 
@@ -232,6 +232,7 @@ pub mod write {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std;
     use std::io;
 
     #[test]
@@ -385,7 +386,7 @@ mod tests {
 
     #[test]
     fn dogfood_signed() {
-        for i in -513..513 {
+        fn inner(i: i64) {
             let mut buf = [0u8; 1024];
 
             {
@@ -397,6 +398,10 @@ mod tests {
             let result = read::signed(&mut readable).expect("Should be able to read it back again");
             assert_eq!(i, result);
         }
+        for i in -513..513 {
+            inner(i);
+        }
+        inner(std::i64::MIN);
     }
 
     #[test]
