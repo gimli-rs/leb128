@@ -117,11 +117,11 @@ pub mod read {
             let mut buf = [0];
             try!(r.read_exact(&mut buf));
 
-            let low_bits = low_bits_of_byte(buf[0]) as u64;
-            if low_bits.leading_zeros() < shift {
+            if shift == 63 && buf[0] != 0x00 && buf[0] != 0x01 {
                 return Err(Error::Overflow);
             }
 
+            let low_bits = low_bits_of_byte(buf[0]) as u64;
             result |= low_bits << shift;
 
             if buf[0] & CONTINUATION_BIT == 0 {
