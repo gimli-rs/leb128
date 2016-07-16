@@ -213,18 +213,11 @@ pub mod write {
         where W: io::Write
     {
         let mut more = true;
-        let is_negative = val < 0;
-        let size = 64;
         let mut bytes_written = 0;
 
         while more {
             let mut byte = (val as u64 & !(CONTINUATION_BIT as u64)) as u8;
             val >>= 7;
-
-            if is_negative {
-                // Sign extend.
-                val |= -(1 << (size - 7));
-            }
 
             if (val == 0 && (byte & SIGN_BIT) == 0) ||
                (val == -1 && (byte & SIGN_BIT) == SIGN_BIT) {
