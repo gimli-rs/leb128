@@ -71,8 +71,6 @@ pub mod read {
     pub enum Error {
         /// There was an underlying IO error.
         IoError(io::Error),
-        /// We were not done reading the number, but there is no more data.
-        UnexpectedEndOfData,
         /// The number being read is larger than can be represented.
         Overflow,
     }
@@ -95,7 +93,6 @@ pub mod read {
         fn description(&self) -> &str {
             match *self {
                 Error::IoError(ref e) => e.description(),
-                Error::UnexpectedEndOfData => "Unexpected end of data while reading",
                 Error::Overflow => "The number being read is larger than can be represented",
             }
         }
@@ -103,7 +100,6 @@ pub mod read {
         fn cause(&self) -> Option<&::std::error::Error> {
             match *self {
                 Error::IoError(ref e) => Some(e),
-                Error::UnexpectedEndOfData |
                 Error::Overflow => None,
             }
         }
@@ -119,15 +115,13 @@ pub mod read {
 
         loop {
             let mut buf = [0];
-            if try!(r.read(&mut buf)) != 1 {
-                return Err(Error::UnexpectedEndOfData);
-            }
+            try!(r.read_exact(&mut buf));
 
-            let low_bits = low_bits_of_byte(buf[0]) as u64;
-            if low_bits.leading_zeros() < shift {
+            if shift == 63 && buf[0] != 0x00 && buf[0] != 0x01 {
                 return Err(Error::Overflow);
             }
 
+            let low_bits = low_bits_of_byte(buf[0]) as u64;
             result |= low_bits << shift;
 
             if buf[0] & CONTINUATION_BIT == 0 {
@@ -150,16 +144,14 @@ pub mod read {
 
         loop {
             let mut buf = [0];
-            if try!(r.read(&mut buf)) != 1 {
-                return Err(Error::UnexpectedEndOfData);
-            }
+            try!(r.read_exact(&mut buf));
 
             byte = buf[0];
-            let low_bits = low_bits_of_byte(byte) as i64;
-            if low_bits.leading_zeros() < shift {
+            if shift == 63 && byte != 0x00 && byte != 0x7f {
                 return Err(Error::Overflow);
             }
 
+            let low_bits = low_bits_of_byte(byte) as i64;
             result |= low_bits << shift;
             shift += 7;
 
@@ -170,7 +162,7 @@ pub mod read {
 
         if shift < size && (SIGN_BIT & byte) == SIGN_BIT {
             // Sign extend the result.
-            result |= -(1 << shift);
+            result |= !0 << shift;
         }
 
         Ok(result)
@@ -198,7 +190,8 @@ pub mod write {
             }
 
             let buf = [byte];
-            bytes_written += try!(w.write(&buf));
+            try!(w.write_all(&buf));
+            bytes_written += 1;
 
             if val == 0 {
                 return Ok(bytes_written);
@@ -213,18 +206,11 @@ pub mod write {
         where W: io::Write
     {
         let mut more = true;
-        let is_negative = val < 0;
-        let size = 64;
         let mut bytes_written = 0;
 
         while more {
             let mut byte = (val as u64 & !(CONTINUATION_BIT as u64)) as u8;
             val >>= 7;
-
-            if is_negative {
-                // Sign extend.
-                val |= -(1 << (size - 7));
-            }
 
             if (val == 0 && (byte & SIGN_BIT) == 0) ||
                (val == -1 && (byte & SIGN_BIT) == SIGN_BIT) {
@@ -235,7 +221,8 @@ pub mod write {
             }
 
             let buf = [byte];
-            bytes_written += try!(w.write(&buf));
+            try!(w.write_all(&buf));
+            bytes_written += 1;
         }
 
         Ok(bytes_written)
@@ -245,6 +232,8 @@ pub mod write {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std;
+    use std::io;
 
     #[test]
     fn test_low_bits_of_byte() {
@@ -340,34 +329,64 @@ mod tests {
     }
 
     #[test]
+    fn test_read_signed_63_bits() {
+        let buf = [CONTINUATION_BIT,
+                   CONTINUATION_BIT,
+                   CONTINUATION_BIT,
+                   CONTINUATION_BIT,
+                   CONTINUATION_BIT,
+                   CONTINUATION_BIT,
+                   CONTINUATION_BIT,
+                   CONTINUATION_BIT,
+                   0x40];
+        let mut readable = &buf[..];
+        assert_eq!(-0x4000000000000000,
+                   read::signed(&mut readable).expect("Should read number"));
+    }
+
+    #[test]
     fn test_read_unsigned_not_enough_data() {
         let buf = [CONTINUATION_BIT];
         let mut readable = &buf[..];
-        assert!(match read::unsigned(&mut readable) {
-            Err(read::Error::UnexpectedEndOfData) => true,
-            otherwise => {
-                println!("Unexpected: {:?}", otherwise);
-                false
-            }
-        });
+        match read::unsigned(&mut readable) {
+            Err(read::Error::IoError(e)) => assert_eq!(e.kind(), io::ErrorKind::UnexpectedEof),
+            otherwise => panic!("Unexpected: {:?}", otherwise),
+        }
     }
 
     #[test]
     fn test_read_signed_not_enough_data() {
         let buf = [CONTINUATION_BIT];
         let mut readable = &buf[..];
-        assert!(match read::signed(&mut readable) {
-            Err(read::Error::UnexpectedEndOfData) => true,
-            otherwise => {
-                println!("Unexpected: {:?}", otherwise);
-                false
-            }
-        });
+        match read::signed(&mut readable) {
+            Err(read::Error::IoError(e)) => assert_eq!(e.kind(), io::ErrorKind::UnexpectedEof),
+            otherwise => panic!("Unexpected: {:?}", otherwise),
+        }
+    }
+
+    #[test]
+    fn test_write_unsigned_not_enough_space() {
+        let mut buf = [0; 1];
+        let mut writable = &mut buf[..];
+        match write::unsigned(&mut writable, 128) {
+            Err(e) => assert_eq!(e.kind(), io::ErrorKind::WriteZero),
+            otherwise => panic!("Unexpected: {:?}", otherwise),
+        }
+    }
+
+    #[test]
+    fn test_write_signed_not_enough_space() {
+        let mut buf = [0; 1];
+        let mut writable = &mut buf[..];
+        match write::signed(&mut writable, 128) {
+            Err(e) => assert_eq!(e.kind(), io::ErrorKind::WriteZero),
+            otherwise => panic!("Unexpected: {:?}", otherwise),
+        }
     }
 
     #[test]
     fn dogfood_signed() {
-        for i in -513..513 {
+        fn inner(i: i64) {
             let mut buf = [0u8; 1024];
 
             {
@@ -379,6 +398,10 @@ mod tests {
             let result = read::signed(&mut readable).expect("Should be able to read it back again");
             assert_eq!(i, result);
         }
+        for i in -513..513 {
+            inner(i);
+        }
+        inner(std::i64::MIN);
     }
 
     #[test]
