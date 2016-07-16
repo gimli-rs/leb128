@@ -17,7 +17,7 @@ Either
 or add this to your `Cargo.toml`:
 
     [dependencies]
-    leb128 = "0.1.0"
+    leb128 = "0.2.0"
 
 ## Example
 
