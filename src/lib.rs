@@ -198,7 +198,8 @@ pub mod write {
             }
 
             let buf = [byte];
-            bytes_written += try!(w.write(&buf));
+            try!(w.write_all(&buf));
+            bytes_written += 1;
 
             if val == 0 {
                 return Ok(bytes_written);
@@ -228,7 +229,8 @@ pub mod write {
             }
 
             let buf = [byte];
-            bytes_written += try!(w.write(&buf));
+            try!(w.write_all(&buf));
+            bytes_written += 1;
         }
 
         Ok(bytes_written)
@@ -238,6 +240,7 @@ pub mod write {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::io;
 
     #[test]
     fn test_low_bits_of_byte() {
@@ -356,6 +359,26 @@ mod tests {
                 false
             }
         });
+    }
+
+    #[test]
+    fn test_write_unsigned_not_enough_space() {
+        let mut buf = [0; 1];
+        let mut writable = &mut buf[..];
+        match write::unsigned(&mut writable, 128) {
+            Err(e) => assert_eq!(e.kind(), io::ErrorKind::WriteZero),
+            otherwise => panic!("Unexpected: {:?}", otherwise),
+        }
+    }
+
+    #[test]
+    fn test_write_signed_not_enough_space() {
+        let mut buf = [0; 1];
+        let mut writable = &mut buf[..];
+        match write::signed(&mut writable, 128) {
+            Err(e) => assert_eq!(e.kind(), io::ErrorKind::WriteZero),
+            otherwise => panic!("Unexpected: {:?}", otherwise),
+        }
     }
 
     #[test]
