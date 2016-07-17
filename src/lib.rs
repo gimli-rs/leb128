@@ -48,11 +48,13 @@ pub const CONTINUATION_BIT: u8 = 1 << 7;
 pub const SIGN_BIT: u8 = 1 << 6;
 
 #[doc(hidden)]
+#[inline]
 pub fn low_bits_of_byte(byte: u8) -> u8 {
     byte & !CONTINUATION_BIT
 }
 
 #[doc(hidden)]
+#[inline]
 pub fn low_bits_of_u64(val: u64) -> u8 {
     let byte = val & (std::u8::MAX as u64);
     low_bits_of_byte(byte as u8)
@@ -171,7 +173,7 @@ pub mod read {
 
 /// A module for writing integers encoded as LEB128.
 pub mod write {
-    use super::{CONTINUATION_BIT, SIGN_BIT, low_bits_of_u64};
+    use super::{CONTINUATION_BIT, low_bits_of_u64};
     use std::io;
 
     /// Write the given unsigned number using the LEB128 encoding to the given
@@ -205,17 +207,17 @@ pub mod write {
     pub fn signed<W>(w: &mut W, mut val: i64) -> Result<usize, io::Error>
         where W: io::Write
     {
-        let mut more = true;
         let mut bytes_written = 0;
-
-        while more {
-            let mut byte = (val as u64 & !(CONTINUATION_BIT as u64)) as u8;
-            val >>= 7;
-
-            if (val == 0 && (byte & SIGN_BIT) == 0) ||
-               (val == -1 && (byte & SIGN_BIT) == SIGN_BIT) {
-                more = false;
+        loop {
+            let mut byte = val as u8;
+            // Keep the sign bit for testing
+            val >>= 6;
+            let done = val == 0 || val == -1;
+            if done {
+                byte &= !CONTINUATION_BIT;
             } else {
+                // Remove the sign bit
+                val >>= 1;
                 // More bytes to come, so set the continuation bit.
                 byte |= CONTINUATION_BIT;
             }
@@ -223,9 +225,11 @@ pub mod write {
             let buf = [byte];
             try!(w.write_all(&buf));
             bytes_written += 1;
-        }
 
-        Ok(bytes_written)
+            if done {
+                return Ok(bytes_written);
+            }
+        }
     }
 }
 
