@@ -1,6 +1,6 @@
 # `leb128`
 
-[![](http://meritbadge.herokuapp.com/leb128) ![](https://img.shields.io/crates/d/leb128.png)](https://crates.io/crates/leb128) [![Build Status](https://travis-ci.org/fitzgen/leb128.png?branch=master)](https://travis-ci.org/fitzgen/leb128) [![Coverage Status](https://coveralls.io/repos/github/fitzgen/leb128/badge.svg?branch=master)](https://coveralls.io/github/fitzgen/leb128?branch=master)
+[![](http://meritbadge.herokuapp.com/leb128) ![](https://img.shields.io/crates/d/leb128.png)](https://crates.io/crates/leb128) [![Build Status](https://travis-ci.org/gimli-rs/leb128.png?branch=master)](https://travis-ci.org/gimli-rs/leb128) [![Coverage Status](https://coveralls.io/repos/github/gimli-rs/leb128/badge.svg?branch=master)](https://coveralls.io/github/gimli-rs/leb128?branch=master)
 
 Read and write DWARF's "Little Endian Base 128" (LEB128) variable length integer
 encoding.
@@ -40,7 +40,7 @@ assert_eq!(val, -12345);
 
 ## Documentation
 
-[Documentation](http://fitzgen.github.io/leb128/leb128/index.html)
+[Documentation](http://gimli-rs.github.io/leb128/leb128/index.html)
 
 ## License
 
