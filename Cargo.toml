@@ -1,14 +1,14 @@
 [package]
-authors = ["Nick Fitzgerald <fitzgen@gmail.com>"]
+authors = ["Nick Fitzgerald <fitzgen@gmail.com>", "Philip Craig <philipjcraig@gmail.com>"]
 name = "leb128"
-version = "0.2.1"
+version = "0.2.2"
 
 description = "Read and write DWARF's \"Little Endian Base 128\" (LEB128) variable length integer encoding."
 
 license = "Apache-2.0/MIT"
 readme = "./README.md"
 keywords = ["LEB128", "DWARF", "variable", "length", "encoding"]
-documentation = "http://gimli-rs.github.io/leb128/leb128/index.html"
+documentation = "https://docs.rs/leb128"
 repository = "https://github.com/gimli-rs/leb128"
 
 [dependencies]
