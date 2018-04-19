@@ -47,7 +47,7 @@ base-10, hex, and binary.
     let mut buf = vec![];
 
     loop {
-        stdout.write(b"> ").expect("failed to write to stdout");
+        stdout.write_all(b"> ").expect("failed to write to stdout");
         stdout.flush().expect("failed to flush stdout");
 
         buf.clear();
@@ -68,9 +68,9 @@ base-10, hex, and binary.
             })
             .unwrap_or_else(|| "error\n".into());
         stdout
-            .write(b"# unsigned LEB128\n")
-            .and_then(|_| stdout.write(uleb.as_bytes()))
-            .and_then(|_| stdout.write(b"\n"))
+            .write_all(b"# unsigned LEB128\n")
+            .and_then(|_| stdout.write_all(uleb.as_bytes()))
+            .and_then(|_| stdout.write_all(b"\n"))
             .expect("failed to write to stdout");
 
         let leb = str::from_utf8(&buf)
@@ -83,9 +83,9 @@ base-10, hex, and binary.
             })
             .unwrap_or_else(|| "error\n".into());
         stdout
-            .write(b"# signed LEB128\n")
-            .and_then(|_| stdout.write(leb.as_bytes()))
-            .and_then(|_| stdout.write(b"\n"))
+            .write_all(b"# signed LEB128\n")
+            .and_then(|_| stdout.write_all(leb.as_bytes()))
+            .and_then(|_| stdout.write_all(b"\n"))
             .expect("failed to write to stdout");
 
         stdout.flush().expect("failed to flush stdout");
