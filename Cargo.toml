@@ -1,7 +1,7 @@
 [package]
 authors = ["Nick Fitzgerald <fitzgen@gmail.com>", "Philip Craig <philipjcraig@gmail.com>"]
 name = "leb128"
-version = "0.2.2"
+version = "0.2.3"
 
 description = "Read and write DWARF's \"Little Endian Base 128\" (LEB128) variable length integer encoding."
 
@@ -12,13 +12,6 @@ documentation = "https://docs.rs/leb128"
 repository = "https://github.com/gimli-rs/leb128"
 
 [dependencies]
-
-# Unfortunately, clippy keeps breaking on recent nightlies. Disabling until it
-# stabilizes a bit more.
-
-# [dependencies.clippy]
-# optional = true
-# version = "0.0.76"
 
 [features]
 nightly = []
