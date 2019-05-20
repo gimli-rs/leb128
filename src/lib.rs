@@ -180,7 +180,8 @@ pub mod write {
     /// `std::io::Write`able. Returns the number of bytes written to `w`, or an
     /// error if writing failed.
     pub fn unsigned<W>(w: &mut W, mut val: u64) -> Result<usize, io::Error>
-        where W: io::Write
+    where
+        W: ?Sized + io::Write,
     {
         let mut bytes_written = 0;
         loop {
@@ -205,7 +206,8 @@ pub mod write {
     /// `std::io::Write`able. Returns the number of bytes written to `w`, or an
     /// error if writing failed.
     pub fn signed<W>(w: &mut W, mut val: i64) -> Result<usize, io::Error>
-        where W: io::Write
+    where
+        W: ?Sized + io::Write,
     {
         let mut bytes_written = 0;
         loop {
