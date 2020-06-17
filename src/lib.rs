@@ -85,23 +85,15 @@ pub mod read {
 
     impl fmt::Display for Error {
         fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-            write!(
-                f,
-                "leb128::read::Error: {}",
-                ::std::error::Error::description(self)
-            )
+            match *self {
+                Error::IoError(ref e) => e.fmt(f),
+                Error::Overflow => write!(f, "The number being read is larger than can be represented"),
+            }
         }
     }
 
     impl ::std::error::Error for Error {
-        fn description(&self) -> &str {
-            match *self {
-                Error::IoError(ref e) => e.description(),
-                Error::Overflow => "The number being read is larger than can be represented",
-            }
-        }
-
-        fn cause(&self) -> Option<&::std::error::Error> {
+        fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
             match *self {
                 Error::IoError(ref e) => Some(e),
                 Error::Overflow => None,
@@ -120,7 +112,7 @@ pub mod read {
 
         loop {
             let mut buf = [0];
-            try!(r.read_exact(&mut buf));
+            r.read_exact(&mut buf)?;
 
             if shift == 63 && buf[0] != 0x00 && buf[0] != 0x01 {
                 return Err(Error::Overflow);
@@ -150,7 +142,7 @@ pub mod read {
 
         loop {
             let mut buf = [0];
-            try!(r.read_exact(&mut buf));
+            r.read_exact(&mut buf)?;
 
             byte = buf[0];
             if shift == 63 && byte != 0x00 && byte != 0x7f {
@@ -197,7 +189,7 @@ pub mod write {
             }
 
             let buf = [byte];
-            try!(w.write_all(&buf));
+            w.write_all(&buf)?;
             bytes_written += 1;
 
             if val == 0 {
@@ -229,7 +221,7 @@ pub mod write {
             }
 
             let buf = [byte];
-            try!(w.write_all(&buf));
+            w.write_all(&buf)?;
             bytes_written += 1;
 
             if done {
