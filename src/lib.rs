@@ -60,15 +60,13 @@ pub fn low_bits_of_u64(val: u64) -> u8 {
     low_bits_of_byte(byte as u8)
 }
 
-/// A module for reading signed and unsigned integers that have been LEB128
-/// encoded.
+/// A module for reading LEB128-encoded signed and unsigned integers.
 pub mod read {
     use super::{low_bits_of_byte, CONTINUATION_BIT, SIGN_BIT};
     use std::fmt;
     use std::io;
 
-    /// An enumeration of the possible errors that can occur when reading a
-    /// number encoded with LEB128.
+    /// An error type for reading LEB128-encoded values.
     #[derive(Debug)]
     pub enum Error {
         /// There was an underlying IO error.
@@ -101,8 +99,10 @@ pub mod read {
         }
     }
 
-    /// Read an unsigned LEB128 number from the given `std::io::Read`able and
-    /// return it or an error if reading failed.
+    /// Read an unsigned LEB128-encoded number from the `std::io::Read` stream
+    /// `r`.
+    ///
+    /// On success, return the number.
     pub fn unsigned<R>(r: &mut R) -> Result<u64, Error>
     where
         R: io::Read,
@@ -129,8 +129,9 @@ pub mod read {
         }
     }
 
-    /// Read a signed LEB128 number from the given `std::io::Read`able and
-    /// return it or an error if reading failed.
+    /// Read a signed LEB128-encoded number from the `std::io::Read` stream `r`.
+    ///
+    /// On success, return the number.
     pub fn signed<R>(r: &mut R) -> Result<i64, Error>
     where
         R: io::Read,
@@ -167,14 +168,14 @@ pub mod read {
     }
 }
 
-/// A module for writing integers encoded as LEB128.
+/// A module for writing LEB128-encoded signed and unsigned integers.
 pub mod write {
     use super::{low_bits_of_u64, CONTINUATION_BIT};
     use std::io;
 
-    /// Write the given unsigned number using the LEB128 encoding to the given
-    /// `std::io::Write`able. Returns the number of bytes written to `w`, or an
-    /// error if writing failed.
+    /// Write `val` to the `std::io::Write` stream `w` as an unsigned LEB128 value.
+    ///
+    /// On success, return the number of bytes written to `w`.
     pub fn unsigned<W>(w: &mut W, mut val: u64) -> Result<usize, io::Error>
     where
         W: ?Sized + io::Write,
@@ -198,9 +199,9 @@ pub mod write {
         }
     }
 
-    /// Write the given signed number using the LEB128 encoding to the given
-    /// `std::io::Write`able. Returns the number of bytes written to `w`, or an
-    /// error if writing failed.
+    /// Write `val` to the `std::io::Write` stream `w` as a signed LEB128 value.
+    ///
+    /// On success, return the number of bytes written to `w`.
     pub fn signed<W>(w: &mut W, mut val: i64) -> Result<usize, io::Error>
     where
         W: ?Sized + io::Write,
