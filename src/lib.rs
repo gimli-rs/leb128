@@ -552,4 +552,27 @@ mod tests {
             1u64
         );
     }
+
+    #[test]
+    fn test_read_multiple_with_overflow() {
+        let buf = [
+            0b1111_1111, 0b1111_1111, 0b1111_1111, 0b1111_1111,
+            0b1111_1111, 0b1111_1111, 0b1111_1111, 0b1111_1111,
+            0b1111_1111, 0b1111_1111, 0b0111_1111, // Overflow!
+            0b1110_0100, 0b1110_0000, 0b0000_0010, // 45156
+        ];
+        let mut readable = &buf[..];
+
+        assert!(
+            if let read::Error::Overflow = read::unsigned(&mut readable).expect_err("Should fail with Error::Overflow") {
+                true
+            } else {
+                false
+            }
+        );
+        assert_eq!(
+            read::unsigned(&mut readable).expect("Should succeed with correct value"),
+            45156
+        );
+    }
 }
