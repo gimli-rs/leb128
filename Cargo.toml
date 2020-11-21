@@ -11,6 +11,7 @@ readme = "./README.md"
 keywords = ["LEB128", "DWARF", "variable", "length", "encoding"]
 documentation = "https://docs.rs/leb128"
 repository = "https://github.com/gimli-rs/leb128"
+exclude = ["/.travis.yml", "/.coveralls.yml", "/format"]
 
 [dependencies]
 
