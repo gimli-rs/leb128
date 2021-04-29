@@ -16,7 +16,7 @@ exclude = ["/.travis.yml", "/.coveralls.yml", "/format"]
 [dependencies]
 
 [dev-dependencies]
-quickcheck = "0.8.0"
+quickcheck = "1.0.3"
 
 [features]
 nightly = []
