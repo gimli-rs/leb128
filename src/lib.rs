@@ -85,7 +85,9 @@ pub mod read {
         fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
             match *self {
                 Error::IoError(ref e) => e.fmt(f),
-                Error::Overflow => write!(f, "The number being read is larger than can be represented"),
+                Error::Overflow => {
+                    write!(f, "The number being read is larger than can be represented")
+                }
             }
         }
     }
@@ -105,7 +107,7 @@ pub mod read {
     /// On success, return the number.
     pub fn unsigned<R>(r: &mut R) -> Result<u64, Error>
     where
-        R: io::Read,
+        R: ?Sized + io::Read,
     {
         let mut result = 0;
         let mut shift = 0;
@@ -137,7 +139,7 @@ pub mod read {
     /// On success, return the number.
     pub fn signed<R>(r: &mut R) -> Result<i64, Error>
     where
-        R: io::Read,
+        R: ?Sized + io::Read,
     {
         let mut result = 0;
         let mut shift = 0;
@@ -309,6 +311,21 @@ mod tests {
         );
     }
 
+    #[test]
+    fn test_read_unsigned_thru_dyn_trait() {
+        fn read(r: &mut dyn io::Read) -> u64 {
+            read::unsigned(r).expect("Should read number")
+        }
+
+        let buf = [0u8];
+
+        let mut readable = &buf[..];
+        assert_eq!(0, read(&mut readable));
+
+        let mut readable = io::Cursor::new(buf);
+        assert_eq!(0, read(&mut readable));
+    }
+
     // Examples from the DWARF 4 standard, section 7.6, figure 23.
     #[test]
     fn test_read_signed() {
@@ -361,6 +378,21 @@ mod tests {
             -129,
             read::signed(&mut readable).expect("Should read number")
         );
+    }
+
+    #[test]
+    fn test_read_signed_thru_dyn_trait() {
+        fn read(r: &mut dyn io::Read) -> i64 {
+            read::signed(r).expect("Should read number")
+        }
+
+        let buf = [0u8];
+
+        let mut readable = &buf[..];
+        assert_eq!(0, read(&mut readable));
+
+        let mut readable = io::Cursor::new(buf);
+        assert_eq!(0, read(&mut readable));
     }
 
     #[test]
@@ -421,6 +453,38 @@ mod tests {
             Err(e) => assert_eq!(e.kind(), io::ErrorKind::WriteZero),
             otherwise => panic!("Unexpected: {:?}", otherwise),
         }
+    }
+
+    #[test]
+    fn test_write_unsigned_thru_dyn_trait() {
+        fn write(w: &mut dyn io::Write, val: u64) -> usize {
+            write::unsigned(w, val).expect("Should write number")
+        }
+        let mut buf = [0u8; 1];
+
+        let mut writable = &mut buf[..];
+        assert_eq!(write(&mut writable, 0), 1);
+        assert_eq!(buf[0], 0);
+
+        let mut writable = Vec::from(&buf[..]);
+        assert_eq!(write(&mut writable, 0), 1);
+        assert_eq!(buf[0], 0);
+    }
+
+    #[test]
+    fn test_write_signed_thru_dyn_trait() {
+        fn write(w: &mut dyn io::Write, val: i64) -> usize {
+            write::signed(w, val).expect("Should write number")
+        }
+        let mut buf = [0u8; 1];
+
+        let mut writable = &mut buf[..];
+        assert_eq!(write(&mut writable, 0), 1);
+        assert_eq!(buf[0], 0);
+
+        let mut writable = Vec::from(&buf[..]);
+        assert_eq!(write(&mut writable, 0), 1);
+        assert_eq!(buf[0], 0);
     }
 
     #[test]
@@ -556,20 +620,30 @@ mod tests {
     #[test]
     fn test_read_multiple_with_overflow() {
         let buf = [
-            0b1111_1111, 0b1111_1111, 0b1111_1111, 0b1111_1111,
-            0b1111_1111, 0b1111_1111, 0b1111_1111, 0b1111_1111,
-            0b1111_1111, 0b1111_1111, 0b0111_1111, // Overflow!
-            0b1110_0100, 0b1110_0000, 0b0000_0010, // 45156
+            0b1111_1111,
+            0b1111_1111,
+            0b1111_1111,
+            0b1111_1111,
+            0b1111_1111,
+            0b1111_1111,
+            0b1111_1111,
+            0b1111_1111,
+            0b1111_1111,
+            0b1111_1111,
+            0b0111_1111, // Overflow!
+            0b1110_0100,
+            0b1110_0000,
+            0b0000_0010, // 45156
         ];
         let mut readable = &buf[..];
 
-        assert!(
-            if let read::Error::Overflow = read::unsigned(&mut readable).expect_err("Should fail with Error::Overflow") {
-                true
-            } else {
-                false
-            }
-        );
+        assert!(if let read::Error::Overflow =
+            read::unsigned(&mut readable).expect_err("Should fail with Error::Overflow")
+        {
+            true
+        } else {
+            false
+        });
         assert_eq!(
             read::unsigned(&mut readable).expect("Should succeed with correct value"),
             45156
