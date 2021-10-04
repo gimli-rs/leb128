@@ -39,7 +39,8 @@ LEB128 Read-Eval-Print-Loop!
 
 Converts numbers to signed and unsigned LEB128 and displays the results in
 base-10, hex, and binary.
-" );
+"
+    );
 
     let mut stdin = io::BufReader::new(io::stdin());
     let mut stdout = io::stdout();
