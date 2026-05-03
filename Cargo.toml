@@ -1,5 +1,8 @@
 [package]
-authors = ["Nick Fitzgerald <fitzgen@gmail.com>", "Philip Craig <philipjcraig@gmail.com>"]
+authors = [
+    "Nick Fitzgerald <fitzgen@gmail.com>",
+    "Philip Craig <philipjcraig@gmail.com>",
+]
 name = "leb128"
 version = "0.2.6"
 edition = "2018"
@@ -14,9 +17,12 @@ repository = "https://github.com/gimli-rs/leb128"
 exclude = ["/.travis.yml", "/.coveralls.yml", "/format"]
 
 [dependencies]
+embedded-io = "0.6.1"
 
 [dev-dependencies]
 quickcheck = "1.1"
 
 [features]
 nightly = []
+default = ["std"]
+std = ["embedded-io/std"]
